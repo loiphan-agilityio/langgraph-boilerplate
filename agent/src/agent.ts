@@ -3,7 +3,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { copilotkitMiddleware } from "@copilotkit/sdk-js/langgraph";
 
 const model = new ChatOpenAI({
-  model: "gpt-5.4",
+  model: "gpt-4o-mini",
 });
 
 export const graph = createAgent({
