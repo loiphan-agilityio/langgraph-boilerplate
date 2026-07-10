@@ -1,14 +1,19 @@
-# Production image for the standalone LangGraph API service.
-# This Dockerfile is built from the repository root (for example, with
-# `docker build -f agent/Dockerfile .`), as Koyeb does by default.
-FROM oven/bun:1.3.14-slim
+# Install the locked Bun dependency tree, then run LangGraph on Node.js.
+# LangGraph CLI uses tsx, whose CommonJS loader must be launched by Node rather
+# than Bun in this version of the LangGraph CLI.
+FROM oven/bun:1.3.14-slim AS dependencies
 
 WORKDIR /app/agent
 
-# The LangGraph CLI is a runtime dependency because it starts the API service.
 COPY agent/package.json agent/bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
 
+FROM node:20-bookworm-slim AS runner
+
+WORKDIR /app/agent
+
+COPY --from=dependencies /app/agent/node_modules ./node_modules
+COPY agent/package.json ./
 COPY agent/langgraph.koyeb.json agent/tsconfig.json ./
 COPY agent/src ./src
 
@@ -17,6 +22,6 @@ ENV PORT=8000
 
 EXPOSE 8000
 
-# Koyeb supplies PORT at runtime. The start script binds to all interfaces and
-# disables source reloading, which is intended only for local development.
-CMD ["bun", "run", "start"]
+# `npm run` executes the CLI's `#!/usr/bin/env node` entry point with Node.js.
+# The script reads Koyeb's PORT and binds to all interfaces.
+CMD ["npm", "run", "start"]
