@@ -10,7 +10,7 @@ not start that server.
 1. Deploy `agent/` to a public HTTPS service. The Koyeb configuration is
    documented in [DEPLOY_KOYEB.md](./DEPLOY_KOYEB.md). Confirm that
    `https://<agent-host>/ok` returns `200`.
-2. Update the Worker name in `wrangler.jsonc` if `langgraph-js-starter` is not
+2. Update the Worker name in `wrangler.jsonc` if `langgraph-boilerplate` is not
    the desired production Worker name. Keep `services[0].service` identical to
    `name`.
 3. Authenticate the Wrangler CLI with the Cloudflare account that owns the
@@ -36,8 +36,8 @@ for normal UI and agent development.
 
 ## Cloudflare environment variables
 
-In **Workers & Pages → <your Worker> → Settings → Variables and Secrets**, add
-these **runtime** variables before deploying:
+In the Worker’s **Settings → Variables and Secrets** page, add these
+**runtime** variables before deploying:
 
 | Name | Type | Required | Value |
 | --- | --- | --- | --- |
@@ -71,8 +71,30 @@ bun run cf:deploy
 ```
 
 The script passes `--keep-vars`, preserving variables and secrets created in
-the Cloudflare dashboard. For Git-based deployments, set the build command to
-`bun run cf:build`; Cloudflare Workers Builds deploys the generated Worker.
+the Cloudflare dashboard.
+
+### Cloudflare Workers Builds (Git integration)
+
+Configure the following commands in the Worker’s **Settings → Builds** page:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `bun run cf:build` |
+| Deploy command | `npx wrangler deploy --keep-vars` |
+
+Do **not** use `bun run build` as the Cloudflare build command. That command
+only runs `next build`, while the deploy command needs the additional
+`.open-next/` Worker bundle made by `opennextjs-cloudflare build`. If Cloudflare
+logs show `Could not find compiled Open Next config`, the build command is set
+incorrectly; change it to `bun run cf:build` and redeploy.
+
+Keep the package `build` script as `next build`. OpenNext invokes that script
+internally as part of `cf:build`; changing it to call OpenNext would recurse.
+
+The `name` and `services[0].service` values in `wrangler.jsonc` must both
+exactly match the Worker name configured in Workers Builds. This repository is
+configured for `langgraph-boilerplate`; using a different Worker name causes
+the `WORKER_SELF_REFERENCE` service binding deployment error.
 
 ## Notes
 
