@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@copilotkit/runtime"],
+  // Do not externalize this package. Its LangGraph integration has ESM-only
+  // transitive dependencies, which Vercel's Node runtime otherwise attempts to
+  // load as CommonJS. Bundling it lets Turbopack preserve the ESM module graph.
+  transpilePackages: ["@copilotkit/runtime"],
   env: {
     // The public Threads UI flag is DERIVED from the server-side license token.
     // Set COPILOTKIT_LICENSE_TOKEN (only) to enable Threads — do not set this flag

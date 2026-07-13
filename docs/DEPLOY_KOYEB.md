@@ -42,6 +42,45 @@ Deploy the service, then copy its generated `https://…koyeb.app` URL. Confirm 
 
 Deploy the frontend as a separate Web Service. Configure its `AGENT_URL` (or `LANGGRAPH_DEPLOYMENT_URL`) environment variable with the public LangGraph service URL, without a trailing slash. The CopilotKit route in `src/app/api/copilotkit/[[...slug]]/route.ts` will use that server and graph ID `sample_agent`.
 
+### Vercel frontend
+
+Vercel deploys only the Next.js application; it does not start the `agent/` LangGraph server. After deploying the agent service above, add the following Vercel project environment variable for **Production**, **Preview**, and **Development** as appropriate:
+
+| Name | Value |
+| --- | --- |
+| `AGENT_URL` | The public agent URL, e.g. `https://your-agent.koyeb.app` |
+
+Do not use `http://localhost:8123` on Vercel: within a Vercel Serverless Function, `localhost` points to that function rather than to the separately deployed LangGraph agent. Redeploy the Vercel project after saving the variable. The application now fails fast with a clear configuration error if `AGENT_URL` is missing in production.
+
+### CopilotKit Intelligence realtime (Threads)
+
+When Threads are enabled, the browser connects **directly** to the CopilotKit
+Intelligence realtime gateway. Vercel does not proxy this WebSocket. Therefore,
+adding the Vercel domain to the Intelligence project's allowed origins is
+required in addition to setting the runtime secrets.
+
+1. Sign in to the [CopilotKit Intelligence dashboard](https://dashboard.operations.copilotkit.ai/), then open the project matching the API key deployed to Vercel.
+2. In the project's security/origin settings, add the exact frontend origin:
+   `https://langgraph-boilerplate.vercel.app`.
+3. Add each additional Vercel preview or custom-domain origin that should be
+   allowed. Origins must include `https://`, omit paths, and must not have a
+   trailing slash.
+4. Configure these Vercel variables for the same environment scope, then
+   redeploy:
+
+| Name | Value |
+| --- | --- |
+| `COPILOTKIT_LICENSE_TOKEN` | License token issued for the Intelligence project |
+| `INTELLIGENCE_API_KEY` | Project API key from the Intelligence dashboard |
+| `INTELLIGENCE_API_URL` | `https://api.intelligence.copilotkit.ai` |
+| `INTELLIGENCE_GATEWAY_WS_URL` | `wss://realtime.intelligence.copilotkit.ai` |
+
+If the API routes `/api/copilotkit/threads` and
+`/api/copilotkit/threads/subscribe` return `200` but the browser reports a
+WebSocket handshake `403`, the runtime credentials are valid; the frontend
+origin is not authorized by the realtime gateway. Updating application code or
+using a Vercel rewrite cannot resolve that server-side authorization failure.
+
 ## Operational notes
 
 - The image runs the LangGraph development API in no-reload mode. It is appropriate for this stateless starter. For durable threads, add a production checkpointer and configure its external database before enabling multi-instance scaling.
