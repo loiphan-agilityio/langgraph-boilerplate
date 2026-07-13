@@ -1,11 +1,10 @@
 import {
   CopilotRuntime,
   CopilotKitIntelligence,
-  createCopilotEndpoint,
+  createCopilotRuntimeHandler,
   InMemoryAgentRunner,
-} from "@copilotkit/runtime/v2";
+} from "@/lib/copilotkit/cloudflare-runtime";
 import { LangGraphAgent } from "@copilotkit/runtime/langgraph";
-import { handle } from "hono/vercel";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +19,7 @@ function getAgentDeploymentUrl(): string {
     }
 
     throw new Error(
-      "Missing AGENT_URL. Set AGENT_URL in the Vercel project environment variables to the public HTTPS URL of the deployed LangGraph service.",
+      "Missing AGENT_URL. Set AGENT_URL in the Cloudflare Worker environment variables to the public HTTPS URL of the deployed LangGraph service.",
     );
   }
 
@@ -71,12 +70,13 @@ const copilotRuntime = new CopilotRuntime({
     : { runner: new InMemoryAgentRunner() }),
 });
 
-const app = createCopilotEndpoint({
+const handler = createCopilotRuntimeHandler({
   runtime: copilotRuntime,
   basePath: "/api/copilotkit",
+  cors: true,
 });
 
-export const GET = handle(app);
-export const POST = handle(app);
-export const PATCH = handle(app);
-export const DELETE = handle(app);
+export const GET = handler;
+export const POST = handler;
+export const PATCH = handler;
+export const DELETE = handler;
