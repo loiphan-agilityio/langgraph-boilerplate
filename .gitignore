@@ -2,4 +2,8 @@ node_modules
 
 .next
 
+.open-next
+.wrangler
+
 .env
+.dev.vars

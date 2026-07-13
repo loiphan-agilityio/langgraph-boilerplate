@@ -10,6 +10,10 @@
     "dev:agent": "cd agent && bun run dev",
     "build": "next build",
     "build:webpack": "next build --webpack",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "bun run cf:build && opennextjs-cloudflare preview",
+    "cf:deploy": "bun run cf:build && opennextjs-cloudflare deploy -- --keep-vars",
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "bun run typecheck",
@@ -26,11 +30,13 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "concurrently": "^9.1.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.110.0"
   },
   "engines": {
     "node": ">=20.9.0"

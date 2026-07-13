@@ -1,0 +1,2 @@
+# Selects `.env.development` when running the local Worker preview.
+NEXTJS_ENV=development
