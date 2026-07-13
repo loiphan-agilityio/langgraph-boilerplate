@@ -14,6 +14,11 @@
       "service": "langgraph-boilerplate"
     }
   ],
+  "vars": {
+    "AGENT_URL": "https://frozen-hestia-nezumi-9c4944cb.koyeb.app",
+    "INTELLIGENCE_API_URL": "https://api.intelligence.copilotkit.ai",
+    "INTELLIGENCE_GATEWAY_WS_URL": "wss://realtime.intelligence.copilotkit.ai"
+  },
   "observability": {
     "logs": {
       "enabled": true,
